@@ -26,6 +26,92 @@ pub struct InnerName<'a> {
 
 pub use rents::Name;
 
+/// From [RFC 6154 section 2](https://datatracker.ietf.org/doc/html/rfc6154#section-2)
+/// IMAP LIST Extension for Special-Use Mailboxes:
+///
+/// > An IMAP server that supports this extension MAY include any or all of
+/// > the following attributes in responses to the non-extended IMAP LIST
+/// > command.  The new attributes are included along with existing
+/// > attributes, such as "\Marked" and "\Noselect".  A given mailbox may
+/// > have none, one, or more than one of these attributes.  In some cases,
+/// > a special use is advice to a client about what to put in that
+/// > mailbox.  In other cases, it's advice to a client about what to
+/// > expect to find there.  There is no capability string related to the
+/// > support of special-use attributes on the non-extended LIST command.
+/// >
+/// > ...
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum SpecialUseMailbox {
+    /// From [RFC 6154 section 2](https://datatracker.ietf.org/doc/html/rfc6154#section-2)
+    /// IMAP LIST Extension for Special-Use Mailboxes:
+    ///
+    /// > This mailbox presents all messages in the user's message store.
+    /// > Implementations MAY omit some messages, such as, perhaps, those
+    /// > in \Trash and \Junk.  When this special use is supported, it is
+    /// > almost certain to represent a virtual mailbox.
+    All,
+
+    /// From [RFC 6154 section 2](https://datatracker.ietf.org/doc/html/rfc6154#section-2)
+    /// IMAP LIST Extension for Special-Use Mailboxes:
+    ///
+    /// > This mailbox is used to archive messages.  The meaning of an
+    /// > "archival" mailbox is server-dependent; typically, it will be
+    /// > used to get messages out of the inbox, or otherwise keep them
+    /// > out of the user's way, while still making them accessible.
+    Archive,
+
+    /// From [RFC 6154 section 2](https://datatracker.ietf.org/doc/html/rfc6154#section-2)
+    /// IMAP LIST Extension for Special-Use Mailboxes:
+    ///
+    /// > This mailbox is used to hold draft messages -- typically,
+    /// > messages that are being composed but have not yet been sent.  In
+    /// > some server implementations, this might be a virtual mailbox,
+    /// > containing messages from other mailboxes that are marked with
+    /// > the "\Draft" message flag.  Alternatively, this might just be
+    /// > advice that a client put drafts here.
+    Drafts,
+
+    /// From [RFC 6154 section 2](https://datatracker.ietf.org/doc/html/rfc6154#section-2)
+    /// IMAP LIST Extension for Special-Use Mailboxes:
+    ///
+    /// > This mailbox presents all messages marked in some way as
+    /// > "important".  When this special use is supported, it is likely
+    /// > to represent a virtual mailbox collecting messages (from other
+    /// > mailboxes) that are marked with the "\Flagged" message flag.
+    Flagged,
+
+    /// From [RFC 6154 section 2](https://datatracker.ietf.org/doc/html/rfc6154#section-2)
+    /// IMAP LIST Extension for Special-Use Mailboxes:
+    ///
+    /// > This mailbox is where messages deemed to be junk mail are held.
+    /// > Some server implementations might put messages here
+    /// > automatically.  Alternatively, this might just be advice to a
+    /// > client-side spam filter.
+    Junk,
+
+    /// From [RFC 6154 section 2](https://datatracker.ietf.org/doc/html/rfc6154#section-2)
+    /// IMAP LIST Extension for Special-Use Mailboxes:
+    ///
+    /// > This mailbox is used to hold copies of messages that have been
+    /// > sent.  Some server implementations might put messages here
+    /// > automatically.  Alternatively, this might just be advice that a
+    /// > client save sent messages here.
+    Sent,
+
+    /// From [RFC 6154 section 2](https://datatracker.ietf.org/doc/html/rfc6154#section-2)
+    /// IMAP LIST Extension for Special-Use Mailboxes:
+    ///
+    /// > This mailbox is used to hold messages that have been deleted or
+    /// > marked for deletion.  In some server implementations, this might
+    /// > be a virtual mailbox, containing messages from other mailboxes
+    /// > that are marked with the "\Deleted" message flag.
+    /// > Alternatively, this might just be advice that a client that
+    /// > chooses not to use the IMAP "\Deleted" model should use this as
+    /// > its trash location.  In server implementations that strictly
+    /// > expect the IMAP "\Deleted" model, this special use is likely not
+    /// > to be supported.
+    Trash,
+}
 /// An attribute set for an IMAP name.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum NameAttribute<'a> {
@@ -46,11 +132,34 @@ pub enum NameAttribute<'a> {
     /// last time the mailbox was selected.
     Unmarked,
 
+    /// Special-use mailboxes are defined in
+    /// [RFC 6154](https://datatracker.ietf.org/doc/html/rfc6154).
+    SpecialUseMailbox(SpecialUseMailbox),
+
     /// A non-standard user- or server-defined name attribute.
     Custom(Cow<'a, str>),
 }
 
 impl NameAttribute<'static> {
+    /// Parses the special-use mailbox defined in
+    /// [RFC 6154 section 2](https://datatracker.ietf.org/doc/html/rfc6154#section-2)
+    /// from the string.
+    fn special_use_mailbox(s: &str) -> Option<Self> {
+        match s {
+            "\\All" => Some(NameAttribute::SpecialUseMailbox(SpecialUseMailbox::All)),
+            "\\Archive" => Some(NameAttribute::SpecialUseMailbox(SpecialUseMailbox::Archive)),
+            "\\Drafts" => Some(NameAttribute::SpecialUseMailbox(SpecialUseMailbox::Drafts)),
+            "\\Flagged" => Some(NameAttribute::SpecialUseMailbox(SpecialUseMailbox::Flagged)),
+            "\\Junk" => Some(NameAttribute::SpecialUseMailbox(SpecialUseMailbox::Junk)),
+            "\\Sent" => Some(NameAttribute::SpecialUseMailbox(SpecialUseMailbox::Sent)),
+            "\\Trash" => Some(NameAttribute::SpecialUseMailbox(SpecialUseMailbox::Trash)),
+            _ => None,
+        }
+    }
+
+    /// Parses the name attributes defined in
+    /// [RFC 3501 section 7.2.2](https://datatracker.ietf.org/doc/html/rfc3501#section-7.2.2)
+    /// from the string.
     fn system(s: &str) -> Option<Self> {
         match s {
             "\\Noinferiors" => Some(NameAttribute::NoInferiors),
@@ -66,6 +175,8 @@ impl<'a> From<String> for NameAttribute<'a> {
     fn from(s: String) -> Self {
         if let Some(f) = NameAttribute::system(&s) {
             f
+        } else if let Some(f) = NameAttribute::special_use_mailbox(&s) {
+            f
         } else {
             NameAttribute::Custom(Cow::Owned(s))
         }
@@ -75,6 +186,8 @@ impl<'a> From<String> for NameAttribute<'a> {
 impl<'a> From<&'a str> for NameAttribute<'a> {
     fn from(s: &'a str) -> Self {
         if let Some(f) = NameAttribute::system(s) {
+            f
+        } else if let Some(f) = NameAttribute::special_use_mailbox(s) {
             f
         } else {
             NameAttribute::Custom(Cow::Borrowed(s))
@@ -120,5 +233,30 @@ impl Name {
     /// names.
     pub fn name(&self) -> &str {
         self.suffix().name
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_special_use() {
+        use NameAttribute::*;
+        use self::SpecialUseMailbox::*;
+
+        let special_use_mailboxes = [
+            ("\\All", All),
+            ("\\Archive", Archive),
+            ("\\Drafts", Drafts),
+            ("\\Flagged", Flagged),
+            ("\\Junk", Junk),
+            ("\\Sent", Sent),
+            ("\\Trash", Trash),
+        ];
+
+        for (string, enum_value) in special_use_mailboxes {
+            assert_eq!(NameAttribute::special_use_mailbox(string).unwrap(), SpecialUseMailbox(enum_value));
+        }
     }
 }

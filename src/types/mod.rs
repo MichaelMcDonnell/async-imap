@@ -196,7 +196,7 @@ mod fetch;
 pub use self::fetch::Fetch;
 
 mod name;
-pub use self::name::{Name, NameAttribute};
+pub use self::name::{Name, NameAttribute, SpecialUseMailbox};
 
 mod capabilities;
 pub use self::capabilities::{Capabilities, Capability};
