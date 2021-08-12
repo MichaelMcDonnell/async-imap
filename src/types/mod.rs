@@ -196,7 +196,9 @@ mod fetch;
 pub use self::fetch::Fetch;
 
 mod name;
-pub use self::name::{Name, NameAttribute, SpecialUseMailbox};
+pub use self::name::{Name, NameAttribute};
+#[cfg(feature = "special-use-mailboxes")]
+pub use self::name::SpecialUseMailbox;
 
 mod capabilities;
 pub use self::capabilities::{Capabilities, Capability};
