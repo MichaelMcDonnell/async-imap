@@ -287,7 +287,7 @@ mod tests {
         ];
 
         for (string, enum_value) in special_use_mailboxes {
-            assert_eq!(NameAttribute::special_use_mailbox(string).unwrap(), SpecialUseMailbox(enum_value));
+            assert_eq!(NameAttribute::from(string), SpecialUseMailbox(enum_value));
         }
     }
 }
