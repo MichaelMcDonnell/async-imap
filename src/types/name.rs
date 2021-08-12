@@ -272,7 +272,7 @@ mod tests {
 
     #[test]
     #[cfg(feature = "special-use-mailboxes")]
-    fn parse_special_use() {
+    fn parse_special_use_mailboxes() {
         use NameAttribute::*;
         use self::SpecialUseMailbox::*;
 
