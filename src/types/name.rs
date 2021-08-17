@@ -40,7 +40,6 @@ pub use rents::Name;
 /// > support of special-use attributes on the non-extended LIST command.
 /// >
 /// > ...
-#[cfg(feature = "special-use-mailboxes")]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum SpecialUseMailbox {
     /// From [RFC 6154 section 2](https://datatracker.ietf.org/doc/html/rfc6154#section-2)
@@ -135,7 +134,6 @@ pub enum NameAttribute<'a> {
 
     /// Special-use mailboxes are defined in
     /// [RFC 6154](https://datatracker.ietf.org/doc/html/rfc6154).
-    #[cfg(feature = "special-use-mailboxes")]
     SpecialUseMailbox(SpecialUseMailbox),
 
     /// A non-standard user- or server-defined name attribute.
@@ -146,7 +144,6 @@ impl NameAttribute<'static> {
     /// Parses the special-use mailbox defined in
     /// [RFC 6154 section 2](https://datatracker.ietf.org/doc/html/rfc6154#section-2)
     /// from the string.
-    #[cfg(feature = "special-use-mailboxes")]
     fn special_use_mailbox(s: &str) -> Option<Self> {
         match s {
             "\\All" => Some(NameAttribute::SpecialUseMailbox(SpecialUseMailbox::All)),
@@ -174,10 +171,11 @@ impl NameAttribute<'static> {
     }
 }
 
-#[cfg(not(feature = "special-use-mailboxes"))]
 impl<'a> From<String> for NameAttribute<'a> {
     fn from(s: String) -> Self {
         if let Some(f) = NameAttribute::system(&s) {
+            f
+        } else if let Some(f) = NameAttribute::special_use_mailbox(&s) {
             f
         } else {
             NameAttribute::Custom(Cow::Owned(s))
@@ -185,39 +183,11 @@ impl<'a> From<String> for NameAttribute<'a> {
     }
 }
 
-#[cfg(feature = "special-use-mailboxes")]
-impl<'a> From<String> for NameAttribute<'a> {
-    fn from(s: String) -> Self {
-        if let Some(f) = NameAttribute::system(&s) {
-            f
-        }
-        else if let Some(f) = NameAttribute::special_use_mailbox(&s) {
-            f
-        } else {
-            NameAttribute::Custom(Cow::Owned(s))
-        }
-    }
-}
-
-
-#[cfg(not(feature = "special-use-mailboxes"))]
 impl<'a> From<&'a str> for NameAttribute<'a> {
     fn from(s: &'a str) -> Self {
         if let Some(f) = NameAttribute::system(s) {
             f
-        } else {
-            NameAttribute::Custom(Cow::Borrowed(s))
-        }
-    }
-}
-
-#[cfg(feature = "special-use-mailboxes")]
-impl<'a> From<&'a str> for NameAttribute<'a> {
-    fn from(s: &'a str) -> Self {
-        if let Some(f) = NameAttribute::system(s) {
-            f
-        }
-        else if let Some(f) = NameAttribute::special_use_mailbox(s) {
+        } else if let Some(f) = NameAttribute::special_use_mailbox(s) {
             f
         } else {
             NameAttribute::Custom(Cow::Borrowed(s))
@@ -271,10 +241,9 @@ mod tests {
     use super::*;
 
     #[test]
-    #[cfg(feature = "special-use-mailboxes")]
     fn parse_special_use_mailboxes() {
-        use NameAttribute::*;
         use self::SpecialUseMailbox::*;
+        use NameAttribute::*;
 
         let special_use_mailboxes = [
             ("\\All", All),
