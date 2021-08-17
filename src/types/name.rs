@@ -240,6 +240,8 @@ impl Name {
 mod tests {
     use super::*;
 
+    // Test that the special-use mailbox attributes that the server returns can
+    // be parsed into the correct enum values.
     #[test]
     fn parse_special_use_mailboxes() {
         use self::SpecialUseMailbox::*;
