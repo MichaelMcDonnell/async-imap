@@ -244,21 +244,21 @@ mod tests {
     // be parsed into the correct enum values.
     #[test]
     fn parse_special_use_mailboxes() {
-        use self::SpecialUseMailbox::*;
-        use NameAttribute::*;
-
         let special_use_mailboxes = [
-            ("\\All", All),
-            ("\\Archive", Archive),
-            ("\\Drafts", Drafts),
-            ("\\Flagged", Flagged),
-            ("\\Junk", Junk),
-            ("\\Sent", Sent),
-            ("\\Trash", Trash),
+            ("\\All", SpecialUseMailbox::All),
+            ("\\Archive", SpecialUseMailbox::Archive),
+            ("\\Drafts", SpecialUseMailbox::Drafts),
+            ("\\Flagged", SpecialUseMailbox::Flagged),
+            ("\\Junk", SpecialUseMailbox::Junk),
+            ("\\Sent", SpecialUseMailbox::Sent),
+            ("\\Trash", SpecialUseMailbox::Trash),
         ];
 
         for (string, enum_value) in special_use_mailboxes {
-            assert_eq!(NameAttribute::from(string), SpecialUseMailbox(enum_value));
+            assert_eq!(
+                NameAttribute::from(string),
+                NameAttribute::SpecialUseMailbox(enum_value)
+            );
         }
     }
 }
