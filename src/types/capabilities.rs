@@ -4,6 +4,8 @@ use std::collections::HashSet;
 
 const IMAP4REV1_CAPABILITY: &str = "IMAP4rev1";
 const AUTH_CAPABILITY_PREFIX: &str = "AUTH=";
+const CREATE_SPECIAL_USE_CAPABILITY: &str = "CREATE-SPECIAL-USE";
+const SPECIAL_USE_CAPABILITY: &str = "SPECIAL-USE";
 
 /// List of available Capabilities.
 #[derive(Debug, Eq, PartialEq, Hash)]
@@ -14,6 +16,12 @@ pub enum Capability {
     Auth(String),
     /// Any other atoms.
     Atom(String),
+    /// Create special-use mailboxes capability. See
+    /// [RFC 6154](https://datatracker.ietf.org/doc/html/rfc6154)).
+    CreateSpecialUse,
+    /// Special-use mailboxes capability. See
+    /// [RFC 6154](https://datatracker.ietf.org/doc/html/rfc6154)).
+    SpecialUse,
 }
 
 impl From<&CapabilityRef<'_>> for Capability {
@@ -22,6 +30,9 @@ impl From<&CapabilityRef<'_>> for Capability {
             CapabilityRef::Imap4rev1 => Capability::Imap4rev1,
             CapabilityRef::Auth(s) => Capability::Auth(s.clone().into_owned()),
             CapabilityRef::Atom(s) => Capability::Atom(s.clone().into_owned()),
+            // TODO: Add capabilities to the `imap_proto` crate.
+            //CapabilityRef::CreateSpecialUse => Capability::CreateSpecialUse,
+            //CapabilityRef::SpecialUse => Capability::SpecialUse,
         }
     }
 }

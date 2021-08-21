@@ -349,9 +349,16 @@ mod tests {
 
     #[async_std::test]
     async fn parse_capability_test() {
-        let expected_capabilities = &["IMAP4rev1", "STARTTLS", "AUTH=GSSAPI", "LOGINDISABLED"];
-        let responses =
-            input_stream(&["* CAPABILITY IMAP4rev1 STARTTLS AUTH=GSSAPI LOGINDISABLED\r\n"]);
+        let expected_capabilities = &[
+            "IMAP4rev1",
+            "STARTTLS",
+            "AUTH=GSSAPI",
+            "LOGINDISABLED",
+            "CREATE-SPECIAL-USE",
+        ];
+        let responses = input_stream(&[
+            "* CAPABILITY IMAP4rev1 STARTTLS AUTH=GSSAPI LOGINDISABLED CREATE-SPECIAL-USE\r\n",
+        ]);
 
         let mut stream = async_std::stream::from_iter(responses);
         let (send, recv) = channel::bounded(10);
@@ -359,7 +366,7 @@ mod tests {
         let capabilities = parse_capabilities(&mut stream, send, id).await.unwrap();
         // shouldn't be any unexpected responses parsed
         assert!(recv.is_empty());
-        assert_eq!(capabilities.len(), 4);
+        assert_eq!(capabilities.len(), 5);
         for e in expected_capabilities {
             assert!(capabilities.has_str(e));
         }
