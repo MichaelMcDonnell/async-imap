@@ -362,6 +362,7 @@ pub(crate) async fn handle_unilateral(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::borrow::Cow;
 
     fn input_stream(data: &[&str]) -> Vec<io::Result<ResponseData>> {
         data.iter()
@@ -443,7 +444,7 @@ mod tests {
         assert_eq!(names.len(), 1);
         assert_eq!(
             names[0].attributes(),
-            &[NameAttribute::from("\\HasNoChildren")]
+            &[NameAttribute::Extension(Cow::Borrowed("\\HasNoChildren"))]
         );
         assert_eq!(names[0].delimiter(), Some("."));
         assert_eq!(names[0].name(), "INBOX");
@@ -532,7 +533,7 @@ mod tests {
         assert_eq!(names.len(), 1);
         assert_eq!(
             names[0].attributes(),
-            &[NameAttribute::from("\\HasNoChildren")]
+            &[NameAttribute::Extension(Cow::Borrowed("\\HasNoChildren"))]
         );
         assert_eq!(names[0].delimiter(), Some("."));
         assert_eq!(names[0].name(), "INBOX");

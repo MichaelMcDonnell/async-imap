@@ -196,13 +196,13 @@ mod fetch;
 pub use self::fetch::Fetch;
 
 mod name;
-pub use self::name::{Name, NameAttribute};
+pub use self::name::Name;
 
 mod capabilities;
 pub use self::capabilities::{Capabilities, Capability};
 
 /// re-exported from imap_proto;
-pub use imap_proto::StatusAttribute;
+pub use imap_proto::{NameAttribute, StatusAttribute};
 
 mod id_generator;
 pub(crate) use self::id_generator::IdGenerator;
